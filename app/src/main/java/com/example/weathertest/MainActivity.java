@@ -52,11 +52,12 @@ public class MainActivity extends AppCompatActivity implements Weather.WeatherCa
 
     }
 
-    void getAccessToLocation(){
+    void getAccessToLocation() {
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                         Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
     }
+
     void initView() {
 
         city = findViewById(R.id.city_field);
@@ -86,11 +87,15 @@ public class MainActivity extends AppCompatActivity implements Weather.WeatherCa
             return;
         }
         MyLocationListener myLocationListener = new MyLocationListener(this);
+        MyLocationListener myLocationListener2 = new MyLocationListener(this);
         List<String> providers = lm.getAllProviders();
         for (int i = 0; i < providers.size(); i++) {
             String provider = providers.get(i);
             if (provider.equals(LocationManager.NETWORK_PROVIDER)) {
-                lm.requestLocationUpdates(provider, 15000, 10, myLocationListener);
+                lm.requestLocationUpdates(provider, 15000, 500, myLocationListener);
+
+            } else if (provider.equals(LocationManager.GPS_PROVIDER)) {
+                lm.requestLocationUpdates(provider, 15000, 500, myLocationListener2);
 
             }
         }
