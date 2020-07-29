@@ -19,7 +19,7 @@ import java.util.TimeZone;
 public class Weather {
     static final String API_KEY = "53ae43e26c671e28677f2f296df470c1";
     static final String query = "https://api.openweathermap.org/data/2.5/onecall?";
-    static final String queryCity = "http://api.openweathermap.org/data/2.5/weather?";
+    static final String queryCity = "https://api.openweathermap.org/data/2.5/weather?";
 
     static JSONObject getJSONFromQuery(String query) {
         try {

@@ -7,20 +7,19 @@
     android:background="@drawable/fooon">
 
 
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:background="#4deee8aa"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="#4deee8aa">
 
         <TextView
             android:id="@+id/city_field"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="10dp"
-
             android:layout_marginTop="10dp"
+
+            android:layout_marginBottom="10dp"
             android:gravity="center"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@android:color/black"
@@ -197,8 +196,8 @@
             android:id="@+id/dailyRecycler"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/tabl"
             android:background="#4df5deb3"
+            app:layout_constraintTop_toBottomOf="@id/tabl"
             tools:itemCount="7"
             tools:listitem="@layout/item_daily" />
 

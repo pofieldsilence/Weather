@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -43,25 +42,21 @@ public class MainActivity extends AppCompatActivity implements Weather.WeatherCa
     ImageView ic_sundown;
     RecyclerView recyclerView;
 
-
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         initView();
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-//        recyclerView.setNestedScrollingEnabled(false);
-//        getLocation();
+        getAccessToLocation();
+
+    }
+
+    void getAccessToLocation(){
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                         Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
     }
-
     void initView() {
 
         city = findViewById(R.id.city_field);
@@ -80,27 +75,26 @@ public class MainActivity extends AppCompatActivity implements Weather.WeatherCa
         text_sunset = findViewById(R.id.text_sunset);
         ic_sunset = findViewById(R.id.ic_sunset);
         recyclerView = findViewById(R.id.dailyRecycler);
-        Log.d("MainActivity", recyclerView.toString());
-
 
     }
 
     void getLocation() {
         LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.d("GetLocation", "No");
+            getAccessToLocation();
 
             return;
         }
+        MyLocationListener myLocationListener = new MyLocationListener(this);
         List<String> providers = lm.getAllProviders();
         for (int i = 0; i < providers.size(); i++) {
             String provider = providers.get(i);
-            if (!provider.equals(LocationManager.PASSIVE_PROVIDER)) {
-                lm.requestLocationUpdates(provider, 5000, 20, new MyLocationListener(this));
+            if (provider.equals(LocationManager.NETWORK_PROVIDER)) {
+                lm.requestLocationUpdates(provider, 15000, 10, myLocationListener);
 
             }
         }
-        Log.d("GetLocation", "Yes");
+
     }
 
     @Override
