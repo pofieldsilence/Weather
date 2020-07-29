@@ -122,15 +122,17 @@ public class MainActivity extends AppCompatActivity implements Weather.WeatherCa
             @Override
             public void run() {
                 preloader.setVisibility(View.GONE);
-                city.setText(model.city);
 
-                text_wind.setText(Integer.toString((int) model.wind_speed) + " м/с");
+                city.setText(model.city);
+                degree.setText(model.temperature);
+
+                text_wind.setText(model.wind_speed);
                 ic_wind.setImageResource(R.drawable.ic_wind);
 
-                text_humidity.setText(Integer.toString((int) model.humidity) + " %");
+                text_humidity.setText(model.humidity);
                 ic_humidity.setImageResource(R.drawable.ic_humidity);
 
-                text_pressure.setText(Integer.toString((int) model.press) + " мм.рт.ст.");
+                text_pressure.setText(model.pressure);
                 ic_pressure.setImageResource(R.drawable.ic_pressure);
 
                 text_sunset.setText(model.sunsetTime);
@@ -139,36 +141,8 @@ public class MainActivity extends AppCompatActivity implements Weather.WeatherCa
                 text_sundown.setText(model.sunriseTime);
                 ic_sundown.setImageResource(R.drawable.ic_sundown);
 
+                icon.setImageResource(model.icon);
 
-
-                if (model.temperature > 0)
-                    degree.setText("+" + Double.toString((int) model.temperature) + " °C");
-                else degree.setText(Double.toString((int) model.temperature) + " °C");
-                Log.d("GetWeather", model.mainDescription);
-                switch (model.mainDescription) {
-                    case "Thunderstorm":
-                        icon.setImageResource(R.drawable.ic_thunderstorm);
-                        break;
-                    case "Drizzle":
-                        icon.setImageResource(R.drawable.ic_drizzle);
-                        break;
-                    case "Rain":
-                        icon.setImageResource(R.drawable.ic_rain);
-                        break;
-                    case "Snow":
-                        icon.setImageResource(R.drawable.ic_snow);
-                        break;
-                    case "Atmosphere":
-                        icon.setImageResource(R.drawable.ic_atmosphere);
-                        break;
-                    case "Clear":
-                        icon.setImageResource(R.drawable.ic_clear);
-                        break;
-                    case "Clouds":
-                        icon.setImageResource(R.drawable.ic_clouds);
-                        break;
-
-                }
                 status.setText(model.description);
 
                 recyclerView.setAdapter(new DailyAdapter(model.dailyModels));
@@ -179,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements Weather.WeatherCa
 
     @Override
     public void onLocationFounded(Double latitude, Double longitude) {
-        Weather.getWeather(this, latitude, longitude, this);
+        Weather.getWeather(this, latitude, longitude);
     }
 
 

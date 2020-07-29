@@ -31,40 +31,11 @@ public class DailyAdapter extends RecyclerView.Adapter<DailyAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         DailyModel dailyModel = dailyModelsList.get(position);
-        ImageView icon = holder.iconDaily;
+        holder.iconDaily.setImageResource(dailyModel.icon);
         holder.dayOfMonth.setText(dailyModel.date);
-
-        switch (dailyModel.mainDescriptionForIcon) {
-            case "Thunderstorm":
-                icon.setImageResource(R.drawable.ic_thunderstorm);
-                break;
-            case "Drizzle":
-                icon.setImageResource(R.drawable.ic_drizzle);
-                break;
-            case "Rain":
-                icon.setImageResource(R.drawable.ic_rain);
-                break;
-            case "Snow":
-                icon.setImageResource(R.drawable.ic_snow);
-                break;
-            case "Atmosphere":
-                icon.setImageResource(R.drawable.ic_atmosphere);
-                break;
-            case "Clear":
-                icon.setImageResource(R.drawable.ic_clear);
-                break;
-            case "Clouds":
-                icon.setImageResource(R.drawable.ic_clouds);
-                break;
-
-        }
-
-
         holder.dayOfWeek.setText(dailyModel.day);
-        if (dailyModel.tempDay > 0) holder.tempDay.setText("+" + dailyModel.tempDay + " °C");
-        else holder.tempDay.setText(dailyModel.tempDay + " °C");
-        if (dailyModel.tempNight > 0) holder.tempNight.setText("+" + dailyModel.tempNight + " °C");
-        else holder.tempNight.setText(dailyModel.tempNight + " °C");
+        holder.tempDay.setText(dailyModel.tempDay);
+        holder.tempNight.setText(dailyModel.tempNight);
     }
 
 
@@ -74,7 +45,7 @@ public class DailyAdapter extends RecyclerView.Adapter<DailyAdapter.ViewHolder> 
         return dailyModelsList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    static public class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView dayOfMonth;
         TextView dayOfWeek;

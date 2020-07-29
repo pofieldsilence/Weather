@@ -1,6 +1,5 @@
 package com.example.weathertest;
 
-import android.content.Context;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -22,10 +21,31 @@ public class Weather {
     static final String query = "https://api.openweathermap.org/data/2.5/onecall?";
     static final String queryCity = "http://api.openweathermap.org/data/2.5/weather?";
 
+    static JSONObject getJSONFromQuery(String query) {
+        try {
+            //get json
+            StringBuilder result = new StringBuilder();
+            HttpURLConnection connection = (HttpURLConnection) new URL(query).openConnection();
+            connection.setRequestMethod("GET");
+            connection.connect();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                result.append(line).append('\n');
+            }
+            Log.d("getWeather", result.toString());
+            bufferedReader.close();
+            connection.disconnect();
+            //parse json
 
-//"lat={lat}&lon={lon}&appid={your api key}";
+            return new JSONObject(result.toString());
+        } catch (Exception e) {
+            Log.e("getWeather", e.getMessage() + query);
+        }
+        return null;
+    }
 
-    static void getWeather(final WeatherCallback callback, final Double latitude, final Double longitude, final Context context) {
+    static void getWeather(final WeatherCallback callback, final Double latitude, final Double longitude) {
         final String request = getQuery(query, latitude, longitude);
         final String requestCity = getQuery(queryCity, latitude, longitude);
 
@@ -33,22 +53,8 @@ public class Weather {
             @Override
             public void run() {
                 try {
-                    //get json
-                    StringBuilder result = new StringBuilder();
-                    HttpURLConnection connection = (HttpURLConnection) new URL(request).openConnection();
-                    connection.setRequestMethod("GET");
-                    connection.connect();
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
-                    String line;
-                    while ((line = bufferedReader.readLine()) != null) {
-                        result.append(line).append('\n');
-                    }
-                    Log.d("getWeather", result.toString());
-                    bufferedReader.close();
-                    connection.disconnect();
                     //parse json
-
-                    JSONObject json = new JSONObject(result.toString());
+                    JSONObject json = getJSONFromQuery(request);
 
                     JSONObject current = json.getJSONObject("current");
                     double temp = current.getDouble("temp");
@@ -117,33 +123,13 @@ public class Weather {
                         listDaily.add(dailyModel);
 
                     }
-
-                    result = new StringBuilder();
-                    connection = (HttpURLConnection) new URL(requestCity).openConnection();
-                    connection.setRequestMethod("GET");
-                    connection.connect();
-                    bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
-                    line = "";
-                    while ((line = bufferedReader.readLine()) != null) {
-                        result.append(line).append('\n');
-                    }
-                    Log.d("getWeather", result.toString());
-                    bufferedReader.close();
-                    connection.disconnect();
-                    json = new JSONObject(result.toString());
-
+                    json = getJSONFromQuery(requestCity);
                     String city = json.getString("name");
-
-
-                    WeatherModel weather = new WeatherModel(city, tempr, press, humidity, wind_speed, press, sunriseTime, sunsetTime, mainDescription, description, listDaily);
+                    WeatherModel weather = new WeatherModel(city, tempr, press, humidity, wind_speed, sunriseTime, sunsetTime, mainDescription, description, listDaily);
                     callback.onGetWeather(weather);
-
-
-
                 } catch (Exception e) {
                     Log.e("getWeather", e.getMessage());
                 }
-
             }
         });
         thread.start();
