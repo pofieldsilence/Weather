@@ -4,23 +4,20 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.agrawalsuneet.dotsloader.loaders.AllianceLoader;
-
-import java.util.List;
-
 import static androidx.core.content.PermissionChecker.PERMISSION_GRANTED;
 
 public class MainActivity extends AppCompatActivity implements Weather.WeatherCallback, MyLocationListener.LocationCallback {
@@ -42,12 +39,16 @@ public class MainActivity extends AppCompatActivity implements Weather.WeatherCa
     ImageView ic_sundown;
     RecyclerView recyclerView;
 
+    int codeAccessForLocation = 1;
+
+    int minTimems = 15000;
+    int minDistm = 20;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         initView();
-        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         getAccessToLocation();
 
     }
@@ -55,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements Weather.WeatherCa
     void getAccessToLocation() {
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
+                        Manifest.permission.ACCESS_COARSE_LOCATION}, codeAccessForLocation);
     }
 
     void initView() {
@@ -76,43 +77,57 @@ public class MainActivity extends AppCompatActivity implements Weather.WeatherCa
         text_sunset = findViewById(R.id.text_sunset);
         ic_sunset = findViewById(R.id.ic_sunset);
         recyclerView = findViewById(R.id.dailyRecycler);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 
     }
 
+    boolean permissionForLocationIsGranted() {
+        return (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED);
+
+    }
+
+
+    @SuppressLint("MissingPermission")
     void getLocation() {
-        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            getAccessToLocation();
 
-            return;
-        }
-        MyLocationListener myLocationListener = new MyLocationListener(this);
-        MyLocationListener myLocationListener2 = new MyLocationListener(this);
-        List<String> providers = lm.getAllProviders();
-        for (int i = 0; i < providers.size(); i++) {
-            String provider = providers.get(i);
-            if (provider.equals(LocationManager.NETWORK_PROVIDER)) {
-                lm.requestLocationUpdates(provider, 15000, 500, myLocationListener);
+        if (permissionForLocationIsGranted()) {
+            LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            MyLocationListener myLocationListener = new MyLocationListener(this);
+            Criteria criteria = new Criteria();
+            criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+            criteria.setCostAllowed(false);
+            String bestProvider = lm.getBestProvider(criteria, true);
+            if (bestProvider.equals(LocationManager.PASSIVE_PROVIDER))
+                onLocationFail();
+            else lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTimems, minDistm, myLocationListener);
+        } else getAccessToLocation();
 
-            } else if (provider.equals(LocationManager.GPS_PROVIDER)) {
-                lm.requestLocationUpdates(provider, 15000, 500, myLocationListener2);
-
-            }
-        }
 
     }
+
+//    String findBestProvider(LocationManager lm) {
+//        String bestProvider = "";
+//        for (String provider : lm.getAllProviders()) {
+//            if (provider.equals(LocationManager.GPS_PROVIDER)) {
+//                bestProvider = provider;
+//                break;
+//            }
+//            bestProvider = provider;
+//
+//        }
+//        return bestProvider;
+//    }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (grantResults.length != 0) {
-            if (grantResults[0] == PERMISSION_GRANTED) {
-                getLocation();
+        if (grantResults[0] == PERMISSION_GRANTED & requestCode == codeAccessForLocation)
+            getLocation();
+        else onLocationFail();
 
-            } else
-                Toast.makeText(this, "Не удалось определить местоположение :(", Toast.LENGTH_LONG).show();
-        }
     }
+
 
     @Override
     public void onGetWeather(final WeatherModel model) {
@@ -153,6 +168,11 @@ public class MainActivity extends AppCompatActivity implements Weather.WeatherCa
     @Override
     public void onLocationFounded(Double latitude, Double longitude) {
         Weather.getWeather(this, latitude, longitude);
+    }
+
+    @Override
+    public void onLocationFail() {
+        Toast.makeText(this, "Не удалось определить местоположение :(", Toast.LENGTH_LONG).show();
     }
 
 
